@@ -1,104 +1,353 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Emissor de Certificados dos Conselhos de Justiça</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Emissor de Certificados dos Conselhos</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-  <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.js"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-  <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-</head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.js"></script>
+    <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  </head>
 
-<body class="bg-gray-100 min-h-screen p-8 font-sans">
-  <div class="max-w-6xl mx-auto bg-white shadow-2xl rounded-lg p-10 border border-gray-300">
-    <div class="border-b-2 border-blue-900 pb-4 mb-6 flex justify-between items-center">
-      <div>
-        <h1 class="text-2xl md:text-3xl font-bold text-blue-900">Emissor de Certificados - Conselhos de Justiça</h1>
-        <p class="text-sm text-gray-600 mt-1">Versão V15 • Nomenclatura Inteligente do Arquivo ZIP</p>
+  <body class="bg-gray-100 min-h-screen p-8 font-sans">
+    <div class="max-w-6xl mx-auto bg-white shadow-2xl rounded-lg p-10 border border-gray-300">
+      <div class="border-b-2 border-blue-900 pb-4 mb-6 flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold text-blue-900">Emissor de Certificados</h1>
+          <p class="text-sm text-gray-600 mt-1">Versão V15</p>
+        </div>
+        <button id="btnResetFonts" class="text-xs text-red-500 underline hover:text-red-700">
+          Resetar Fontes
+        </button>
       </div>
-      <button id="btnResetFonts" class="text-xs text-red-500 underline hover:text-red-700">
-        Resetar Fontes
-      </button>
+
+      <div class="mb-6 flex gap-2">
+        <button id="tabLote" class="px-4 py-2 rounded border border-slate-300 bg-slate-900 text-white text-sm font-bold">
+          Lote
+        </button>
+        <button id="tabEdit" class="px-4 py-2 rounded border border-slate-300 bg-white text-slate-800 text-sm font-bold">
+          Editar Certificado
+        </button>
+      </div>
+
+      <div id="pageLote">
+        <div class="bg-indigo-50 p-6 rounded border border-indigo-100 mb-8 shadow-sm">
+          <label class="block font-bold text-indigo-900 mb-2 text-lg">Quem ministrou a palestra?</label>
+          <select
+            id="selectJuiz"
+            class="w-full p-3 border border-indigo-300 rounded bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="vera">Dr.ª Vera Lúcia da Silva Conceição (Juíza Federal)</option>
+            <option value="vitor">Dr. Vitor de Luca (Juiz Federal Substituto)</option>
+          </select>
+        </div>
+
+        <details class="mb-6 bg-slate-50 rounded border border-slate-200" open>
+          <summary class="p-4 font-bold text-slate-700 cursor-pointer text-sm">Dados Gerais</summary>
+          <div class="p-6 border-t border-slate-200 text-sm">
+            <div class="bg-white rounded border border-slate-200 p-4">
+              <label class="block text-[10px] font-bold uppercase text-slate-700">Tipo de Conselho</label>
+              <select id="loteModo" class="w-full p-2 border border-slate-300 rounded bg-white text-gray-700">
+                <option value="permanente">Conselho Permanente</option>
+                <option value="especial" selected>Conselho Especial</option>
+              </select>
+              <p class="mt-2 text-[11px] text-slate-600">
+                Dica: no Conselho Especial, a Força escolhida fica travada para todos os participantes.
+              </p>
+            </div>
+
+            <div id="dgPermanente" class="mt-4 hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded border border-amber-200 p-4">
+                  <h4 class="font-bold text-amber-900 mb-3">Período (Permanente)</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-[10px] font-bold uppercase text-amber-900">Trimestre</label>
+                      <select
+                        id="permTrimestre"
+                        class="w-full p-2 border border-amber-300 rounded bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      >
+                        <option value="Primeiro">Primeiro</option>
+                        <option value="Segundo">Segundo</option>
+                        <option value="Terceiro">Terceiro</option>
+                        <option value="Quarto" selected>Quarto</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold uppercase text-amber-900">Ano</label>
+                      <input
+                        type="number"
+                        id="permAno"
+                        value=""
+                        min="2000"
+                        max="2100"
+                        class="border rounded p-2 w-full text-center font-bold text-amber-900"
+                      />
+                    </div>
+                  </div>
+                  <p class="mt-3 text-[11px] text-amber-900/80">Usado no texto e no nome do ZIP para Conselho Permanente.</p>
+                </div>
+
+                <div class="bg-white rounded border border-amber-200 p-4">
+                  <h4 class="font-bold text-amber-900 mb-3">Agenda da Palestra (por Força)</h4>
+                  <p class="text-[11px] text-amber-900/80 mb-4">
+                    Preencha para definir a data/horário exibidos no certificado de Palestra (por Força).
+                  </p>
+
+                  <div class="grid grid-cols-1 gap-4">
+                    <div class="border rounded border-amber-200 p-3">
+                      <div class="font-bold text-amber-900 mb-2">Exército</div>
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label class="block text-[10px] font-bold uppercase text-amber-900">Data</label>
+                          <input id="permPalestraExercitoData" type="date" class="border rounded p-2 w-full" />
+                        </div>
+                        <div>
+                          <label class="block text-[10px] font-bold uppercase text-amber-900">Início</label>
+                          <input id="permPalestraExercitoIni" type="time" class="border rounded p-2 w-full" />
+                        </div>
+                        <div>
+                          <label class="block text-[10px] font-bold uppercase text-amber-900">Fim</label>
+                          <input id="permPalestraExercitoFim" type="time" class="border rounded p-2 w-full" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="border rounded border-amber-200 p-3">
+                      <div class="font-bold text-amber-900 mb-2">Marinha</div>
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label class="block text-[10px] font-bold uppercase text-amber-900">Data</label>
+                          <input id="permPalestraMarinhaData" type="date" class="border rounded p-2 w-full" />
+                        </div>
+                        <div>
+                          <label class="block text-[10px] font-bold uppercase text-amber-900">Início</label>
+                          <input id="permPalestraMarinhaIni" type="time" class="border rounded p-2 w-full" />
+                        </div>
+                        <div>
+                          <label class="block text-[10px] font-bold uppercase text-amber-900">Fim</label>
+                          <input id="permPalestraMarinhaFim" type="time" class="border rounded p-2 w-full" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="border rounded border-amber-200 p-3">
+                      <div class="font-bold text-amber-900 mb-2">Aeronáutica</div>
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label class="block text-[10px] font-bold uppercase text-amber-900">Data</label>
+                          <input id="permPalestraAeronauticaData" type="date" class="border rounded p-2 w-full" />
+                        </div>
+                        <div>
+                          <label class="block text-[10px] font-bold uppercase text-amber-900">Início</label>
+                          <input id="permPalestraAeronauticaIni" type="time" class="border rounded p-2 w-full" />
+                        </div>
+                        <div>
+                          <label class="block text-[10px] font-bold uppercase text-amber-900">Fim</label>
+                          <input id="permPalestraAeronauticaFim" type="time" class="border rounded p-2 w-full" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="dgEspecial" class="mt-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded border border-slate-200 p-4">
+                  <h4 class="font-bold text-slate-800 mb-3">Especial</h4>
+                  <div class="grid grid-cols-1 gap-3">
+                    <div>
+                      <label class="block text-[10px] font-bold uppercase text-slate-700">Força (travada)</label>
+                      <select id="espForca" class="w-full p-2 border border-slate-300 rounded bg-white text-gray-700">
+                        <option value="Exército">Exército</option>
+                        <option value="Marinha">Marinha</option>
+                        <option value="Aeronáutica">Aeronáutica</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold uppercase text-slate-700">Processo / Referência</label>
+                      <input
+                        id="loteRef"
+                        type="text"
+                        required
+                        pattern="^\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}(\s*/\s*\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4})?$"
+                        title="Formato: 7000000-00.2026.7.02.0002"
+                        placeholder="7000000-00.2026.7.02.0002"
+                        class="border rounded p-2 w-full"
+                      />
+                    </div>
+                  </div>
+                  <p class="mt-2 text-[11px] text-slate-600">
+                    Obrigatório no Conselho Especial.
+                  </p>
+                </div>
+
+                <div class="bg-white rounded border border-slate-200 p-4">
+                  <h4 class="font-bold text-slate-800 mb-3">Agenda da Palestra (Especial)</h4>
+                  <p class="text-[11px] text-slate-700/80 mb-3">Usada quando não houver Data/Horário em dados externos.</p>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label class="block text-[10px] font-bold uppercase text-slate-700">Data</label>
+                      <input id="lotePalestraData" type="date" required class="border rounded p-2 w-full" />
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold uppercase text-slate-700">Início</label>
+                      <input id="lotePalestraIni" type="time" required class="border rounded p-2 w-full" />
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold uppercase text-slate-700">Fim</label>
+                      <input id="lotePalestraFim" type="time" required class="border rounded p-2 w-full" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="mb-6 bg-emerald-50 rounded border border-emerald-200" open>
+          <summary class="p-4 font-bold text-emerald-900 cursor-pointer text-sm">Participantes</summary>
+          <div class="p-6 border-t border-emerald-200 text-sm">
+            <p class="text-[11px] text-emerald-900/80 mb-4">Os participantes ficam gravados até você limpar a lista.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+              <div>
+                <label class="block text-[10px] font-bold uppercase text-emerald-900">Força</label>
+                <select id="pForca" class="w-full p-2 border border-emerald-300 rounded bg-white text-gray-700">
+                  <option value="Exército">Exército</option>
+                  <option value="Marinha">Marinha</option>
+                  <option value="Aeronáutica">Aeronáutica</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold uppercase text-emerald-900">Posto</label>
+                <select id="pPosto" class="w-full p-2 border border-emerald-300 rounded bg-white text-gray-700"></select>
+              </div>
+              <div class="md:col-span-1">
+                <label class="block text-[10px] font-bold uppercase text-emerald-900">Nome</label>
+                <input id="pNome" type="text" class="border rounded p-2 w-full" placeholder="Nome completo" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold uppercase text-emerald-900">Juiz/Juíza</label>
+                <select id="pJuiz" class="w-full p-2 border border-emerald-300 rounded bg-white text-gray-700">
+                  <option value="Juiz">Juiz</option>
+                  <option value="Juíza">Juíza</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="flex gap-3 mt-4 flex-wrap">
+              <button id="btnAddParticipante" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded shadow">
+                Adicionar
+              </button>
+              <button
+                id="btnLimparParticipantes"
+                class="bg-white hover:bg-emerald-100 text-emerald-900 font-bold py-2 px-4 rounded border border-emerald-300"
+              >
+                Limpar Lista
+              </button>
+            </div>
+
+            <div class="mt-4 bg-white border border-emerald-200 rounded">
+              <div class="p-3 text-xs font-mono text-emerald-900/80 border-b border-emerald-200">Itens: <span id="pCount">0</span></div>
+              <div id="pList" class="divide-y"></div>
+            </div>
+          </div>
+        </details>
+
+        <button
+          id="btnGerar"
+          class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 px-6 rounded shadow-lg flex justify-center items-center gap-2 transition transform active:scale-95"
+        >
+          <span>PROCESSAR LOTE</span>
+        </button>
+
+        <div id="resultArea" class="hidden mt-6 text-center bg-green-50 p-6 rounded border border-green-200 animate-fade-in">
+          <p class="text-green-800 font-bold mb-2 text-xl">Sucesso!</p>
+          <p id="nomeArquivoGerado" class="text-sm text-gray-600 mb-4"></p>
+          <button id="btnDownload" class="bg-green-600 text-white px-8 py-3 rounded font-bold shadow hover:bg-green-700">
+            BAIXAR ZIP
+          </button>
+        </div>
+        <div id="status" class="mt-4 text-center text-xs font-mono text-gray-500 min-h-[20px]"></div>
+      </div>
+
+      <div id="pageEdit" class="hidden">
+        <div id="fontStatusArea" class="bg-gray-50 p-4 rounded border border-gray-200 mb-8">
+          <h3 class="font-bold text-gray-700 mb-2 flex items-center gap-2 text-sm">Banco de Fontes</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div id="statusName" class="flex items-center gap-2 text-gray-400">
+              <span class="w-2 h-2 rounded-full bg-red-400"></span> Franklin Med (Título)
+            </div>
+            <div id="statusReg" class="flex items-center gap-2 text-gray-400">
+              <span class="w-2 h-2 rounded-full bg-red-400"></span> Caviar Reg (Texto)
+            </div>
+            <div id="statusBold" class="flex items-center gap-2 text-gray-400">
+              <span class="w-2 h-2 rounded-full bg-red-400"></span> Caviar Bold (Negrito)
+            </div>
+          </div>
+          <div id="fontInputs" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 hidden">
+            <input type="file" data-font-key="fontName" accept=".ttf,.otf" class="text-xs" />
+            <input type="file" data-font-key="fontReg" accept=".ttf,.otf" class="text-xs" />
+            <input type="file" data-font-key="fontBold" accept=".ttf,.otf" class="text-xs" />
+          </div>
+          <p class="mt-2 text-[11px] text-gray-500">Dica: as fontes padrão estão em <code class="font-mono">assets/</code>.</p>
+        </div>
+
+        <div class="bg-blue-50 p-6 rounded border border-blue-100 mb-6">
+          <label class="block font-bold text-blue-900 mb-2">Fundo (Imagem Limpa)</label>
+          <input
+            type="file"
+            id="bgFile"
+            accept="image/*"
+            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:bg-blue-900 file:text-white cursor-pointer"
+          />
+          <p class="mt-2 text-[11px] text-gray-500">
+            Se não selecionar nenhum arquivo, o sistema usa automaticamente <code class="font-mono">assets/certificado-em-branco.png</code>.
+          </p>
+        </div>
+
+        <details class="mb-6 bg-gray-50 rounded border border-gray-200" open>
+          <summary class="p-4 font-bold text-gray-700 cursor-pointer text-sm">Ajustes de Régua</summary>
+          <div class="p-6 grid grid-cols-2 md:grid-cols-5 gap-4 border-t border-gray-200 text-sm">
+            <div>
+              <label class="block text-[10px] font-bold uppercase">Y Nome</label>
+              <input type="number" id="posY" value="265" class="border rounded p-1 w-full text-center font-bold text-blue-800" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase">Tam. Nome (Max)</label>
+              <input type="number" id="nameSize" value="28" step="0.1" class="border rounded p-1 w-full text-center font-bold text-blue-800" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase">Y Texto</label>
+              <input type="number" id="posYBody" value="220" class="border rounded p-1 w-full text-center font-bold text-blue-800" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase">Tam. Texto</label>
+              <input type="number" id="bodySize" value="14.8" step="0.1" class="border rounded p-1 w-full text-center font-bold text-blue-800" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase">Largura Max</label>
+              <input type="number" id="maxWidth" value="680" class="border rounded p-1 w-full text-center font-bold text-blue-800" />
+            </div>
+          </div>
+        </details>
+      </div>
     </div>
 
-    <div id="fontStatusArea" class="bg-gray-50 p-4 rounded border border-gray-200 mb-8">
-      <h3 class="font-bold text-gray-700 mb-2 flex items-center gap-2 text-sm">🅰️ Banco de Fontes</h3>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-        <div id="statusName" class="flex items-center gap-2 text-gray-400"><span class="w-2 h-2 rounded-full bg-red-400"></span> Franklin Med (Título)</div>
-        <div id="statusReg" class="flex items-center gap-2 text-gray-400"><span class="w-2 h-2 rounded-full bg-red-400"></span> Caviar Reg (Texto)</div>
-        <div id="statusBold" class="flex items-center gap-2 text-gray-400"><span class="w-2 h-2 rounded-full bg-red-400"></span> Caviar Bold (Negrito)</div>
-      </div>
-      <div id="fontInputs" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 hidden">
-        <input type="file" data-font-key="fontName" accept=".ttf,.otf" class="text-xs"/>
-        <input type="file" data-font-key="fontReg" accept=".ttf,.otf" class="text-xs"/>
-        <input type="file" data-font-key="fontBold" accept=".ttf,.otf" class="text-xs"/>
-      </div>
-      <p class="mt-2 text-[11px] text-gray-500">
-        Dica: as fontes padrão estão em <code class="font-mono">assets/</code>.
-      </p>
-    </div>
-
-    <div class="bg-indigo-50 p-6 rounded border border-indigo-100 mb-8 shadow-sm">
-      <label class="block font-bold text-indigo-900 mb-2 text-lg">⚖️ Quem ministrou a palestra?</label>
-      <select id="selectJuiz" class="w-full p-3 border border-indigo-300 rounded bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        <option value="vera">Dr.ª Vera Lúcia da Silva Conceição (Juíza Federal)</option>
-        <option value="vitor">Dr. Vitor de Luca (Juiz Federal Substituto)</option>
-      </select>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-      <div class="bg-blue-50 p-6 rounded border border-blue-100">
-        <label class="block font-bold text-blue-900 mb-2">1. Fundo (Imagem Limpa)</label>
-        <input type="file" id="bgFile" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:bg-blue-900 file:text-white cursor-pointer"/>
-        <p class="mt-2 text-[11px] text-gray-500">
-          Se não selecionar nenhum arquivo, o sistema usa automaticamente <code class="font-mono">assets/certificado-em-branco.png</code>.
-        </p>
-      </div>
-
-      <div class="bg-green-50 p-6 rounded border border-green-100">
-        <label class="block font-bold text-green-900 mb-2">2. Planilha Excel (.xlsx)</label>
-        <input type="file" id="xlsxFile" accept=".xlsx, .xls" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:bg-green-700 file:text-white cursor-pointer"/>
-        <div id="colunasDetectadas" class="mt-2 text-[10px] font-mono text-gray-600 bg-white p-2 border rounded hidden"></div>
-        <p class="mt-2 text-[11px] text-gray-500">
-          Exemplos: <code class="font-mono">assets/conselhos-CEJ.xlsx</code>, <code class="font-mono">assets/conselhos-CPJ.xlsx</code>.
-        </p>
-      </div>
-    </div>
-
-    <details class="mb-6 bg-gray-50 rounded border border-gray-200" open>
-      <summary class="p-4 font-bold text-gray-700 cursor-pointer text-sm">⚙️ Ajustes de Régua (Padrões Fixados)</summary>
-      <div class="p-6 grid grid-cols-2 md:grid-cols-5 gap-4 border-t border-gray-200 text-sm">
-        <div><label class="block text-[10px] font-bold uppercase">Y Nome</label><input type="number" id="posY" value="265" class="border rounded p-1 w-full text-center font-bold text-blue-800"></div>
-        <div><label class="block text-[10px] font-bold uppercase">Tam. Nome (Max)</label><input type="number" id="nameSize" value="28" step="0.1" class="border rounded p-1 w-full text-center font-bold text-blue-800"></div>
-        <div><label class="block text-[10px] font-bold uppercase">Y Texto</label><input type="number" id="posYBody" value="220" class="border rounded p-1 w-full text-center font-bold text-blue-800"></div>
-        <div><label class="block text-[10px] font-bold uppercase">Tam. Texto</label><input type="number" id="bodySize" value="14.8" step="0.1" class="border rounded p-1 w-full text-center font-bold text-blue-800"></div>
-        <div><label class="block text-[10px] font-bold uppercase">Largura Max</label><input type="number" id="maxWidth" value="680" class="border rounded p-1 w-full text-center font-bold text-blue-800"></div>
-      </div>
-    </details>
-
-    <button id="btnGerar" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 px-6 rounded shadow-lg flex justify-center items-center gap-2 transition transform active:scale-95">
-      <span>PROCESSAR LOTE (XLSX)</span>
-    </button>
-
-    <div id="resultArea" class="hidden mt-6 text-center bg-green-50 p-6 rounded border border-green-200 animate-fade-in">
-      <p class="text-green-800 font-bold mb-2 text-xl">Sucesso!</p>
-      <p id="nomeArquivoGerado" class="text-sm text-gray-600 mb-4"></p>
-      <button id="btnDownload" class="bg-green-600 text-white px-8 py-3 rounded font-bold shadow hover:bg-green-700">BAIXAR ZIP</button>
-    </div>
-    <div id="status" class="mt-4 text-center text-xs font-mono text-gray-500 min-h-[20px]"></div>
-  </div>
-
-  <script src="./src/ns.js"></script>
-  <script src="./src/constants.js"></script>
-  <script src="./src/font-db.js"></script>
-  <script src="./src/excel.js"></script>
-  <script src="./src/text.js"></script>
-  <script src="./src/draw.js"></script>
-  <script src="./src/process.js"></script>
-  <script src="./src/main.js"></script>
-</body>
+    <script src="./src/ns.js"></script>
+    <script src="./src/constants.js"></script>
+    <script src="./src/config.js"></script>
+    <script src="./src/participants.js"></script>
+    <script src="./src/font-db.js"></script>
+    <script src="./src/text.js"></script>
+    <script src="./src/draw.js"></script>
+    <script src="./src/process.js"></script>
+    <script src="./src/main.js"></script>
+  </body>
 </html>
