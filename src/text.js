@@ -275,7 +275,7 @@
   function montarTexto(row, isPalestra, juizSelecionado, overrides) {
     const context = buildTextoContext(row, isPalestra, juizSelecionado, overrides);
     const textos = overrides && overrides.textos ? overrides.textos : null;
-    const textoPersonalizado = textos ? String(isPalestra ? textos.palestra || "" : textos.conselho || "").trim() : "";
+    const textoPersonalizado = context.isEventoCivil && isPalestra && textos ? String(textos.palestra || "").trim() : "";
     const clean = (t) => limparStringParaFonte(t);
 
     if (textoPersonalizado) return templateToTokens(textoPersonalizado, context);

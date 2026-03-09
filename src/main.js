@@ -507,6 +507,14 @@
   let editingIdx = -1;
   let lastModo = "";
 
+  function participantVisibleFields() {
+    return {
+      force: !isEventoCivil(),
+      posto: !isEventoCivil(),
+      juiz: !isEventoCivil(),
+    };
+  }
+
   function renderParticipants(list) {
     const pList = el("pList");
     const pCount = el("pCount");
@@ -530,6 +538,7 @@
         const postoAbbrRaw = String((x && x.posto) || "").trim();
         const postoAbbr = escapeHtml(postoAbbrRaw);
         const juiz = escapeHtml((x && x.juiz) || "");
+        const visible = participantVisibleFields();
         const prefix = forca
           ? `<span class="inline-flex items-center px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 text-[10px] font-mono mr-2">${forca}</span>`
           : "";
@@ -550,7 +559,7 @@
           return `
             <div class="p-3" data-p-row="${idx}">
               <div class="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
-                <div class="md:col-span-1">
+                <div class="md:col-span-1 ${visible.force ? "" : "hidden"}">
                   <label class="block text-[10px] font-bold uppercase text-slate-700">Força</label>
                   <select data-edit-forca class="w-full p-2 border border-slate-300 rounded bg-white text-gray-700" ${forceDisabled}>
                     <option value="" ${forcaRaw === "" ? "selected" : ""}>Sem força</option>
@@ -559,15 +568,15 @@
                     <option value="Aeronáutica" ${forcaRaw === "Aeronáutica" ? "selected" : ""}>Aeronáutica</option>
                   </select>
                 </div>
-                <div class="md:col-span-1">
+                <div class="md:col-span-1 ${visible.posto ? "" : "hidden"}">
                   <label class="block text-[10px] font-bold uppercase text-slate-700">Posto</label>
                   <select data-edit-posto class="w-full p-2 border border-slate-300 rounded bg-white text-gray-700">${postoOptions}</select>
                 </div>
-                <div class="md:col-span-2">
+                <div class="${visible.force || visible.posto || visible.juiz ? "md:col-span-2" : "md:col-span-4"}">
                   <label class="block text-[10px] font-bold uppercase text-slate-700">Nome</label>
                   <input data-edit-nome type="text" class="border rounded p-2 w-full" value="${nome}" />
                 </div>
-                <div class="md:col-span-1">
+                <div class="md:col-span-1 ${visible.juiz ? "" : "hidden"}">
                   <label class="block text-[10px] font-bold uppercase text-slate-700">Juiz/Juíza</label>
                   <select data-edit-juiz class="w-full p-2 border border-slate-300 rounded bg-white text-gray-700">
                     <option value="Juiz" ${juiz === "Juiz" ? "selected" : ""}>Juiz</option>
@@ -588,7 +597,7 @@
           <div class="p-3 flex items-center justify-between gap-3" data-p-row="${idx}">
             <div class="min-w-0">
               <div class="font-bold text-sm text-slate-900 truncate">${prefix}${postoBadge}${nome}</div>
-              <div class="text-[11px] text-slate-600 font-mono">${(lockedForce || (x && x.forca)) ? "" : "SEM_FORCA • "}${juiz || "SEM_JUIZ"}</div>
+              <div class="text-[11px] text-slate-600 font-mono">${visible.juiz ? (juiz || "SEM_JUIZ") : "PARTICIPANTE CIVIL"}</div>
             </div>
             <div class="flex items-center gap-3">
               <button data-p-edit="${idx}" class="text-xs text-slate-700 underline hover:text-slate-900">Editar</button>
@@ -656,6 +665,7 @@
         const currentStoredForce = String(((cur[i] || {}).forca) || "").trim();
         const forca = lockedForce ? (currentStoredForce || lockedForce) : String((row.querySelector("[data-edit-forca]") || {}).value || "").trim();
         const posto = String((row.querySelector("[data-edit-posto]") || {}).value || "").trim();
+        const visible = participantVisibleFields();
 
         if (!nome) {
           alert("Informe o nome.");
@@ -670,18 +680,21 @@
           return;
         }
 
-        const selJuiz = row.querySelector("[data-edit-juiz]");
-        const fix = maybeSuggestJuizForNome({
-          nome,
-          juiz,
-          setSelectValue: (v) => {
-            if (selJuiz) selJuiz.value = v;
-          },
-        });
-        if (fix.abort) return;
-        const juizEff = fix.juiz;
+        let juizEff = "";
+        if (visible.juiz) {
+          const selJuiz = row.querySelector("[data-edit-juiz]");
+          const fix = maybeSuggestJuizForNome({
+            nome,
+            juiz,
+            setSelectValue: (v) => {
+              if (selJuiz) selJuiz.value = v;
+            },
+          });
+          if (fix.abort) return;
+          juizEff = fix.juiz;
+        }
 
-        cur[i] = { ...(cur[i] || {}), nome, forca, posto, juiz: juizEff };
+        cur[i] = { ...(cur[i] || {}), nome, forca: visible.force ? forca : "", posto: visible.posto ? posto : "", juiz: juizEff };
         CertApp.participants.save(cur, getModo());
         editingIdx = -1;
         renderParticipants(cur);
@@ -695,13 +708,29 @@
     const esp = el("dgEspecial");
     const hintCivil = el("eventoCivilHint");
     const espForca = el("espForca");
+    const customTextSection = el("customTextSection");
+    const participantForceField = el("participantForceField");
+    const participantPostoField = el("participantPostoField");
+    const participantJuizField = el("participantJuizField");
     if (perm) perm.classList.toggle("hidden", !modo.includes("permanente"));
     if (esp) esp.classList.toggle("hidden", !modo.includes("especial"));
     if (hintCivil) hintCivil.classList.toggle("hidden", !isEventoCivil());
     if (espForca) espForca.disabled = isEventoCivil();
+    if (customTextSection) customTextSection.classList.toggle("hidden", !isEventoCivil());
+    if (participantForceField) participantForceField.classList.toggle("hidden", isEventoCivil());
+    if (participantPostoField) participantPostoField.classList.toggle("hidden", isEventoCivil());
+    if (participantJuizField) participantJuizField.classList.toggle("hidden", isEventoCivil());
 
     const emitirConselho = el("emitirConselho");
-    if (emitirConselho && isEventoCivil()) emitirConselho.checked = false;
+    if (emitirConselho) {
+      emitirConselho.disabled = isEventoCivil();
+      if (isEventoCivil()) emitirConselho.checked = false;
+    }
+    const emitirPalestra = el("emitirPalestra");
+    if (emitirPalestra) {
+      emitirPalestra.disabled = isEventoCivil();
+      if (isEventoCivil()) emitirPalestra.checked = true;
+    }
 
     if (modo !== lastModo) {
       editingIdx = -1;
@@ -796,6 +825,7 @@
           const forca = lockedForce || String((el("pForca") && el("pForca").value) || "").trim();
           const posto = String((el("pPosto") && el("pPosto").value) || "").trim();
           let juiz = String((el("pJuiz") && el("pJuiz").value) || "").trim();
+          const visible = participantVisibleFields();
           if (!nome) {
             alert("Informe o nome.");
             return;
@@ -807,19 +837,23 @@
             return;
           }
 
-          const pJuizSel = el("pJuiz");
-          const fix = maybeSuggestJuizForNome({
-            nome,
-            juiz,
-            setSelectValue: (v) => {
-              if (pJuizSel) pJuizSel.value = v;
-            },
-          });
-          if (fix.abort) return;
-          juiz = fix.juiz;
+          if (visible.juiz) {
+            const pJuizSel = el("pJuiz");
+            const fix = maybeSuggestJuizForNome({
+              nome,
+              juiz,
+              setSelectValue: (v) => {
+                if (pJuizSel) pJuizSel.value = v;
+              },
+            });
+            if (fix.abort) return;
+            juiz = fix.juiz;
+          } else {
+            juiz = "";
+          }
 
           const cur = CertApp.participants.load(getModo());
-          cur.push({ nome, forca, posto, juiz });
+          cur.push({ nome, forca: visible.force ? forca : "", posto: visible.posto ? posto : "", juiz });
           CertApp.participants.save(cur, getModo());
           if (el("pNome")) el("pNome").value = "";
           renderParticipants(cur);

@@ -76,7 +76,6 @@
           },
         },
         textos: {
-          conselho: getStr("customTextoConselho"),
           palestra: getStr("customTextoPalestra"),
         },
         emissao: {
