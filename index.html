@@ -85,7 +85,7 @@
                     <span class="text-[11px] text-slate-600">Remove a exig&ecirc;ncia de processo e permite participantes sem posto ou for&ccedil;a militar.</span>
                   </span>
                 </label>
-                <div class="mt-3">
+                <div id="eventoNomeField" class="mt-3 hidden">
                   <label class="block text-[10px] font-bold uppercase text-slate-700">Nome do Evento / Refer&ecirc;ncia Livre</label>
                   <input id="eventoNome" type="text" class="border rounded p-2 w-full" placeholder="Ex.: Semin&aacute;rio de Capacita&ccedil;&atilde;o" />
                 </div>
@@ -242,6 +242,34 @@
                   </div>
                 </div>
               </div>
+            </div>
+
+            <div id="customTextSection" class="mt-4 bg-white rounded border border-slate-200 p-4 hidden">
+              <h4 class="font-bold text-slate-800 mb-3">Texto do Certificado Civil</h4>
+              <p class="text-[11px] text-slate-600 mb-4">
+                Este campo aparece apenas para civis e altera somente o parágrafo central do certificado.
+              </p>
+              <div>
+                <label class="block text-[10px] font-bold uppercase text-slate-700">Texto Livre</label>
+                <textarea
+                  id="customTextoPalestra"
+                  rows="7"
+                  class="border rounded p-3 w-full font-mono text-xs"
+                  placeholder="Ex.: Certificamos que {{participante_nome}} participou da palestra {{evento_nome}} em {{data_palestra}}."
+                ></textarea>
+              </div>
+              <p class="mt-3 text-[11px] text-slate-600">
+                Variáveis disponíveis:
+                <code class="font-mono">{{participante_nome}}</code>,
+                <code class="font-mono">{{evento_nome}}</code>,
+                <code class="font-mono">{{juiz_nome}}</code>,
+                <code class="font-mono">{{juiz_cargo}}</code>,
+                <code class="font-mono">{{data_palestra}}</code>,
+                <code class="font-mono">{{horario_palestra}}</code>.
+              </p>
+              <p class="mt-2 text-[11px] text-slate-600">
+                Para usar negrito com a mesma fonte Caviar Bold, envolva o trecho com <code class="font-mono">**assim**</code>.
+              </p>
             </div>
 
           </div>

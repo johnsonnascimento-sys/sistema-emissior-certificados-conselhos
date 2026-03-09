@@ -75,6 +75,9 @@
             end: getTime("permPalestraAeronauticaFim"),
           },
         },
+        textos: {
+          palestra: getStr("customTextoPalestra"),
+        },
         emissao: {
           conselho: getChecked("emitirConselho"),
           palestra: getChecked("emitirPalestra"),
