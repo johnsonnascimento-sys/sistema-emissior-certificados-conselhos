@@ -278,19 +278,29 @@
     const textoPersonalizado = context.isEventoCivil && isPalestra && textos ? String(textos.palestra || "").trim() : "";
     const clean = (t) => limparStringParaFonte(t);
 
-    if (textoPersonalizado) return templateToTokens(textoPersonalizado, context);
+    if (textoPersonalizado && !context.isEventoCivil) return templateToTokens(textoPersonalizado, context);
 
     if (isPalestra) {
       if (!context.horario_palestra) console.warn(`Sem horário: ${context.participante_nome}`);
 
       if (context.isEventoCivil) {
+        if (textoPersonalizado) return templateToTokens(textoPersonalizado, context);
+
         return [
           {
             text: clean(
-              `No dia ${context.data_palestra || "??"}, das ${context.horario_palestra || "??"}, participou da palestra ministrada ${context.juiz_prep} ${context.juiz_nome}, ${context.juiz_cargo}${context.evento_nome ? `, no evento ${context.evento_nome}` : ""}.`,
+              `No dia ${context.data_palestra || "??"}, das ${context.horario_palestra || "??"}, participou de Palestra realizada ${context.juiz_prep} ${context.juiz_nome}, ${context.juiz_cargo}${context.evento_nome ? `, que teve como tema ` : "."}`,
             ),
             bold: false,
           },
+          ...(context.evento_nome
+            ? [
+                {
+                  text: clean(`“${context.evento_nome}”.`),
+                  bold: true,
+                },
+              ]
+            : []),
         ];
       }
 
