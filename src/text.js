@@ -138,37 +138,6 @@
     };
   }
 
-  function interpolateTemplate(template, context) {
-    return String(template || "").replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_, key) => {
-      const value = context && Object.prototype.hasOwnProperty.call(context, key) ? context[key] : "";
-      return limparStringParaFonte(value);
-    });
-  }
-
-  function templateToTokens(template, context) {
-    const lines = limparStringParaFonte(interpolateTemplate(template, context)).split(/\r?\n/);
-    const tokens = [];
-
-    function pushStyledSegments(line) {
-      const parts = String(line || "").split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
-      parts.forEach((part) => {
-        const isBold = /^\*\*[^*]+\*\*$/.test(part);
-        const text = isBold ? part.slice(2, -2) : part;
-        const cleanText = String(text || "").trim();
-        if (!cleanText) return;
-        tokens.push({ text: cleanText, bold: isBold });
-      });
-    }
-
-    lines.forEach((line, idx) => {
-      const cleanLine = String(line || "").trim();
-      if (cleanLine) pushStyledSegments(cleanLine);
-      if (idx < lines.length - 1) tokens.push({ break: true });
-    });
-
-    return tokens;
-  }
-
   function buildTextoContext(row, isPalestra, juizSelecionado, overrides) {
     const rawGenero = buscarValorInteligente(row, ["JUIZ", "GENERO", "GÊNERO", "FUNÇÃO", "CARGO"]);
     let tipo = buscarValorInteligente(row, ["TIPO", "TIPO CONSELHO"]);
@@ -274,18 +243,12 @@
 
   function montarTexto(row, isPalestra, juizSelecionado, overrides) {
     const context = buildTextoContext(row, isPalestra, juizSelecionado, overrides);
-    const textos = overrides && overrides.textos ? overrides.textos : null;
-    const textoPersonalizado = context.isEventoCivil && isPalestra && textos ? String(textos.palestra || "").trim() : "";
     const clean = (t) => limparStringParaFonte(t);
-
-    if (textoPersonalizado && !context.isEventoCivil) return templateToTokens(textoPersonalizado, context);
 
     if (isPalestra) {
       if (!context.horario_palestra) console.warn(`Sem horário: ${context.participante_nome}`);
 
       if (context.isEventoCivil) {
-        if (textoPersonalizado) return templateToTokens(textoPersonalizado, context);
-
         return [
           {
             text: clean(

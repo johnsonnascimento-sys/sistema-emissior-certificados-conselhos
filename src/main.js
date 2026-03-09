@@ -708,7 +708,6 @@
     const esp = el("dgEspecial");
     const hintCivil = el("eventoCivilHint");
     const espForca = el("espForca");
-    const customTextSection = el("customTextSection");
     const participantForceField = el("participantForceField");
     const participantPostoField = el("participantPostoField");
     const participantJuizField = el("participantJuizField");
@@ -716,7 +715,6 @@
     if (esp) esp.classList.toggle("hidden", !modo.includes("especial"));
     if (hintCivil) hintCivil.classList.toggle("hidden", !isEventoCivil());
     if (espForca) espForca.disabled = isEventoCivil();
-    if (customTextSection) customTextSection.classList.toggle("hidden", !isEventoCivil());
     if (participantForceField) participantForceField.classList.toggle("hidden", isEventoCivil());
     if (participantPostoField) participantPostoField.classList.toggle("hidden", isEventoCivil());
     if (participantJuizField) participantJuizField.classList.toggle("hidden", isEventoCivil());
