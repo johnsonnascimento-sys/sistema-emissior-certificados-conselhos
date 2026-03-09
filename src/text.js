@@ -149,9 +149,20 @@
     const lines = limparStringParaFonte(interpolateTemplate(template, context)).split(/\r?\n/);
     const tokens = [];
 
+    function pushStyledSegments(line) {
+      const parts = String(line || "").split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+      parts.forEach((part) => {
+        const isBold = /^\*\*[^*]+\*\*$/.test(part);
+        const text = isBold ? part.slice(2, -2) : part;
+        const cleanText = String(text || "").trim();
+        if (!cleanText) return;
+        tokens.push({ text: cleanText, bold: isBold });
+      });
+    }
+
     lines.forEach((line, idx) => {
       const cleanLine = String(line || "").trim();
-      if (cleanLine) tokens.push({ text: cleanLine, bold: false });
+      if (cleanLine) pushStyledSegments(cleanLine);
       if (idx < lines.length - 1) tokens.push({ break: true });
     });
 

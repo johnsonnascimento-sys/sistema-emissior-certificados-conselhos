@@ -553,6 +553,7 @@
                 <div class="md:col-span-1">
                   <label class="block text-[10px] font-bold uppercase text-slate-700">Força</label>
                   <select data-edit-forca class="w-full p-2 border border-slate-300 rounded bg-white text-gray-700" ${forceDisabled}>
+                    <option value="" ${forcaRaw === "" ? "selected" : ""}>Sem força</option>
                     <option value="Exército" ${forcaRaw === "Exército" ? "selected" : ""}>Exército</option>
                     <option value="Marinha" ${forcaRaw === "Marinha" ? "selected" : ""}>Marinha</option>
                     <option value="Aeronáutica" ${forcaRaw === "Aeronáutica" ? "selected" : ""}>Aeronáutica</option>
@@ -722,12 +723,14 @@
     if (pForca) {
       pForca.disabled = !!lockedForce;
       if (lockedForce) pForca.value = lockedForce;
+      else if (isEventoCivil()) pForca.value = "";
     }
     const pPosto = el("pPosto");
     if (pPosto) {
       const forcaEff = lockedForce || String((pForca && pForca.value) || "").trim();
       const curPosto = String((pPosto && pPosto.value) || "").trim();
       fillPostoSelect(pPosto, forcaEff, isValidPostoAbbr(forcaEff, curPosto) ? curPosto : "");
+      if (isEventoCivil()) pPosto.value = "";
     }
 
     if (CertApp.participants) renderParticipants(CertApp.participants.load(modo));
