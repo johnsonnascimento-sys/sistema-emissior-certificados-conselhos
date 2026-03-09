@@ -47,28 +47,41 @@
     const lines = [];
     let currentLine = [];
     let currentLen = 0;
-
-    const allWords = [];
-    tokens.forEach((tok) => {
-      const words = String(tok.text || "").split(" ").filter(Boolean);
-      const font = tok.bold ? fontBold : fontReg;
-      words.forEach((w) => allWords.push({ text: w, font, width: font.widthOfTextAtSize(w, size) }));
-    });
-
     const spaceWidth = fontReg.widthOfTextAtSize(" ", size);
 
-    for (let i = 0; i < allWords.length; i++) {
-      const word = allWords[i];
-      if (currentLen + word.width + currentLine.length * spaceWidth < maxW) {
-        currentLine.push(word);
-        currentLen += word.width;
-      } else {
-        lines.push({ words: currentLine, textLen: currentLen });
-        currentLine = [word];
-        currentLen = word.width;
+    function flushLine(forceLast) {
+      if (currentLine.length === 0) {
+        if (forceLast) lines.push({ words: [], textLen: 0, isLast: true, isBreak: true });
+        return;
       }
+      lines.push({ words: currentLine, textLen: currentLen, isLast: !!forceLast });
+      currentLine = [];
+      currentLen = 0;
     }
-    if (currentLine.length > 0) lines.push({ words: currentLine, textLen: currentLen, isLast: true });
+
+    (tokens || []).forEach((tok) => {
+      if (tok && tok.break) {
+        flushLine(true);
+        return;
+      }
+
+      const words = String((tok && tok.text) || "").split(" ").filter(Boolean);
+      const font = tok && tok.bold ? fontBold : fontReg;
+
+      words.forEach((w) => {
+        const word = { text: w, font, width: font.widthOfTextAtSize(w, size) };
+        if (currentLen + word.width + currentLine.length * spaceWidth < maxW) {
+          currentLine.push(word);
+          currentLen += word.width;
+        } else {
+          flushLine(false);
+          currentLine.push(word);
+          currentLen = word.width;
+        }
+      });
+    });
+
+    if (currentLine.length > 0) flushLine(true);
 
     let y = startY;
     const lineHeight = size * 1.5;
@@ -76,6 +89,11 @@
     const blockStartX = (pageWidth - maxW) / 2;
 
     lines.forEach((line) => {
+      if (line.isBreak && line.words.length === 0) {
+        y -= lineHeight;
+        return;
+      }
+
       const startX = blockStartX;
       const extraSpace = maxW - line.textLen;
       const gaps = line.words.length - 1;

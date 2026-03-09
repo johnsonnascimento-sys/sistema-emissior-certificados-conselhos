@@ -461,8 +461,13 @@
     return normalizeLowerAscii(v) || "especial";
   }
 
+  function isEventoCivil() {
+    return !!(el("eventoCivil") && el("eventoCivil").checked);
+  }
+
   function getLockedForce() {
     const modo = getModo();
+    if (isEventoCivil()) return "";
     if (!modo.includes("especial")) return "";
     return String((el("espForca") && el("espForca").value) || "").trim();
   }
@@ -657,7 +662,7 @@
           if (inp) inp.focus();
           return;
         }
-        if (!posto) {
+        if (!posto && !isEventoCivil()) {
           alert("Selecione o posto.");
           const inp = row.querySelector("[data-edit-posto]");
           if (inp) inp.focus();
@@ -687,8 +692,15 @@
     const modo = getModo();
     const perm = el("dgPermanente");
     const esp = el("dgEspecial");
+    const hintCivil = el("eventoCivilHint");
+    const espForca = el("espForca");
     if (perm) perm.classList.toggle("hidden", !modo.includes("permanente"));
     if (esp) esp.classList.toggle("hidden", !modo.includes("especial"));
+    if (hintCivil) hintCivil.classList.toggle("hidden", !isEventoCivil());
+    if (espForca) espForca.disabled = isEventoCivil();
+
+    const emitirConselho = el("emitirConselho");
+    if (emitirConselho && isEventoCivil()) emitirConselho.checked = false;
 
     if (modo !== lastModo) {
       editingIdx = -1;
@@ -698,9 +710,9 @@
     const elRef = el("loteRef");
     if (elRef) {
       const isEspecial = modo.includes("especial");
-      elRef.required = isEspecial;
+      elRef.required = isEspecial && !isEventoCivil();
       const hasValue = !!String(elRef.value || "").trim();
-      const invalid = hasValue ? !elRef.checkValidity() : isEspecial;
+      const invalid = hasValue ? !elRef.checkValidity() : elRef.required;
       elRef.classList.toggle("border-red-400", invalid);
     }
 
@@ -749,6 +761,7 @@
     // Mode UI
     if (el("loteModo")) el("loteModo").addEventListener("change", () => updateModoUI());
     if (el("espForca")) el("espForca").addEventListener("change", () => updateModoUI());
+    if (el("eventoCivil")) el("eventoCivil").addEventListener("change", () => updateModoUI());
     if (el("loteRef")) el("loteRef").addEventListener("input", () => updateModoUI());
     if (el("loteRef")) {
       el("loteRef").addEventListener("input", () => applyMaskedValue(el("loteRef"), formatProcessRef));
@@ -784,7 +797,7 @@
             alert("Informe o nome.");
             return;
           }
-          if (!posto) {
+          if (!posto && !isEventoCivil()) {
             alert("Selecione o posto.");
             const p = el("pPosto");
             if (p) p.focus();

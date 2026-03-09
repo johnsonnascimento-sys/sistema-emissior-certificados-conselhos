@@ -59,6 +59,39 @@
               </p>
             </div>
 
+            <div class="mt-4 bg-white rounded border border-slate-200 p-4">
+              <h4 class="font-bold text-slate-800 mb-3">Tipo de EmissÃ£o</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="flex items-start gap-3">
+                  <input id="emitirConselho" type="checkbox" checked class="mt-1" />
+                  <span class="text-sm text-slate-700">
+                    <span class="font-bold block">Emitir certificado de Conselho</span>
+                    <span class="text-[11px] text-slate-600">Desmarque quando quiser gerar apenas certificados de palestra.</span>
+                  </span>
+                </label>
+                <label class="flex items-start gap-3">
+                  <input id="emitirPalestra" type="checkbox" checked class="mt-1" />
+                  <span class="text-sm text-slate-700">
+                    <span class="font-bold block">Emitir certificado de Palestra</span>
+                    <span class="text-[11px] text-slate-600">Pode ser usado junto com Conselho ou sozinho.</span>
+                  </span>
+                </label>
+              </div>
+              <div class="mt-4 border-t border-slate-200 pt-4">
+                <label class="flex items-start gap-3">
+                  <input id="eventoCivil" type="checkbox" class="mt-1" />
+                  <span class="text-sm text-slate-700">
+                    <span class="font-bold block">Palestra avulsa para civis</span>
+                    <span class="text-[11px] text-slate-600">Remove a exigÃªncia de processo e permite participantes sem posto ou forÃ§a militar.</span>
+                  </span>
+                </label>
+                <div class="mt-3">
+                  <label class="block text-[10px] font-bold uppercase text-slate-700">Nome do Evento / ReferÃªncia Livre</label>
+                  <input id="eventoNome" type="text" class="border rounded p-2 w-full" placeholder="Ex.: SeminÃ¡rio de CapacitaÃ§Ã£o" />
+                </div>
+              </div>
+            </div>
+
             <div id="dgPermanente" class="mt-4 hidden">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-white rounded border border-amber-200 p-4">
@@ -185,6 +218,9 @@
                   <p class="mt-2 text-[11px] text-slate-600">
                     Obrigatório no Conselho Especial.
                   </p>
+                  <p id="eventoCivilHint" class="mt-2 text-[11px] text-slate-600 hidden">
+                    Em modo civil, o processo passa a ser opcional e pode ser substituído pelo nome do evento.
+                  </p>
                 </div>
 
                 <div class="bg-white rounded border border-slate-200 p-4">
@@ -207,6 +243,53 @@
                 </div>
               </div>
             </div>
+
+            <div class="mt-4 bg-white rounded border border-slate-200 p-4">
+              <h4 class="font-bold text-slate-800 mb-3">Textos Personalizados</h4>
+              <p class="text-[11px] text-slate-600 mb-4">
+                Deixe em branco para usar o texto padr&atilde;o. Se preencher, o sistema usar&aacute; o texto informado no PDF correspondente.
+              </p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[10px] font-bold uppercase text-slate-700">Texto do Certificado de Conselho</label>
+                  <textarea
+                    id="customTextoConselho"
+                    rows="7"
+                    class="border rounded p-3 w-full font-mono text-xs"
+                    placeholder="Ex.: Certifico que {{participante_nome_exibicao}} participou do {{nome_conselho}}."
+                  ></textarea>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold uppercase text-slate-700">Texto do Certificado de Palestra</label>
+                  <textarea
+                    id="customTextoPalestra"
+                    rows="7"
+                    class="border rounded p-3 w-full font-mono text-xs"
+                    placeholder="Ex.: Certifico que {{participante_nome_exibicao}} participou da palestra em {{data_palestra}}."
+                  ></textarea>
+                </div>
+              </div>
+              <p class="mt-3 text-[11px] text-slate-600">
+                Vari&aacute;veis dispon&iacute;veis:
+                <code class="font-mono">{{participante_nome}}</code>,
+                <code class="font-mono">{{participante_nome_exibicao}}</code>,
+                <code class="font-mono">{{posto}}</code>,
+                <code class="font-mono">{{forca}}</code>,
+                <code class="font-mono">{{tipo_conselho}}</code>,
+                <code class="font-mono">{{nome_conselho}}</code>,
+                <code class="font-mono">{{evento_nome}}</code>,
+                <code class="font-mono">{{referencia}}</code>,
+                <code class="font-mono">{{processo}}</code>,
+                <code class="font-mono">{{trimestre}}</code>,
+                <code class="font-mono">{{ano}}</code>,
+                <code class="font-mono">{{juiz_nome}}</code>,
+                <code class="font-mono">{{juiz_cargo}}</code>,
+                <code class="font-mono">{{data_palestra}}</code>,
+                <code class="font-mono">{{horario_palestra}}</code>,
+                <code class="font-mono">{{atuou_como}}</code>,
+                <code class="font-mono">{{sufixo_atuacao}}</code>.
+              </p>
+            </div>
           </div>
         </details>
 
@@ -219,6 +302,7 @@
               <div>
                 <label class="block text-[10px] font-bold uppercase text-emerald-900">Força</label>
                 <select id="pForca" class="w-full p-2 border border-emerald-300 rounded bg-white text-gray-700">
+                  <option value="">Sem força</option>
                   <option value="Exército">Exército</option>
                   <option value="Marinha">Marinha</option>
                   <option value="Aeronáutica">Aeronáutica</option>

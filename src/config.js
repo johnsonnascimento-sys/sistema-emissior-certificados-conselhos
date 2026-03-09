@@ -23,14 +23,20 @@
     return v;
   }
 
+  function getChecked(id) {
+    const el = document.getElementById(id);
+    return !!(el && el.checked);
+  }
+
   CertApp.config = {
     getOverrides() {
       const modo = getStr("loteModo") || "especial";
       const modoLower = String(modo || "").toLowerCase();
       const isPermanente = modoLower.includes("permanente");
       const isEspecial = modoLower.includes("especial");
+      const eventoCivil = getChecked("eventoCivil");
 
-      const forca = isEspecial ? getStr("espForca") : "";
+      const forca = isEspecial && !eventoCivil ? getStr("espForca") : "";
 
       const trimestre = getStr("permTrimestre") || "";
       const ano = getStr("permAno") || "";
@@ -68,6 +74,18 @@
             start: getTime("permPalestraAeronauticaIni"),
             end: getTime("permPalestraAeronauticaFim"),
           },
+        },
+        textos: {
+          conselho: getStr("customTextoConselho"),
+          palestra: getStr("customTextoPalestra"),
+        },
+        emissao: {
+          conselho: getChecked("emitirConselho"),
+          palestra: getChecked("emitirPalestra"),
+        },
+        evento: {
+          civil: eventoCivil,
+          nome: getStr("eventoNome"),
         },
       };
     },

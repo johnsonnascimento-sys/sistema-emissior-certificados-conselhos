@@ -316,6 +316,8 @@
     const loteRef = lote && lote.ref ? String(lote.ref).trim() : "";
     const lotePalestra = lote && lote.palestra ? lote.palestra : null;
     const loteForca = lote && lote.forca ? String(lote.forca).trim() : "";
+    const evento = overrides && overrides.evento ? overrides.evento : null;
+    const emissao = overrides && overrides.emissao ? overrides.emissao : null;
 
     const tipoEff = tipo || loteTipo;
     const tipoLower = normalizeAsciiLower(tipoEff);
@@ -328,6 +330,14 @@
 
     const inferredForceKey = !forca && isPermanente && permEnabled ? pickForceKeyFromOverrides(overrides) : "";
     const forcaEff = loteForca || forca || (inferredForceKey ? forceKeyToLabel(inferredForceKey) : "");
+    const isEventoCivil = !!(evento && evento.civil);
+    const eventoNome = evento && evento.nome ? String(evento.nome).trim() : "";
+
+    if (isEventoCivil) {
+      const nomeEvento = sanitizeFilenameToken(eventoNome || refEff || "Evento_Civil");
+      const sufixo = emissao && emissao.palestra && !emissao.conselho ? "Palestra" : "Certificados";
+      return `${sufixo}_${nomeEvento}.zip`;
+    }
 
     if (isPermanente) {
       if (permEnabled) {
@@ -379,7 +389,10 @@
 
       setStatus(`Processando: ${nomeRow}`);
 
-      const tiposCert = ["Conselho", "Palestra"];
+      const tiposCert = [];
+      const emissao = overrides && overrides.emissao ? overrides.emissao : null;
+      if (!emissao || emissao.conselho) tiposCert.push("Conselho");
+      if (!emissao || emissao.palestra) tiposCert.push("Palestra");
       for (const tipoCert of tiposCert) {
         const pdfDoc = await PDFLib.PDFDocument.create();
         pdfDoc.registerFontkit(window.fontkit);
@@ -439,11 +452,20 @@
     const modo = overrides && overrides.lote && overrides.lote.modo ? String(overrides.lote.modo).toLowerCase() : "";
     const isEspecial = modo.includes("especial");
     const isPermanente = modo.includes("permanente");
+    const isEventoCivil = !!(overrides && overrides.evento && overrides.evento.civil);
+    const emissao = overrides && overrides.emissao ? overrides.emissao : null;
+
+    if (!emissao || (!emissao.conselho && !emissao.palestra)) {
+      alert("Selecione pelo menos um tipo de certificado para emitir.");
+      return;
+    }
 
     if (isEspecial) {
       const elRef = document.getElementById("loteRef");
-      if (!requireValidInput(elRef, 'Informe o "Processo / Referência" no formato solicitado.')) return;
-      if (!validateLoteRefCnj(elRef)) return;
+      if (!isEventoCivil) {
+        if (!requireValidInput(elRef, 'Informe o "Processo / Referência" no formato solicitado.')) return;
+        if (!validateLoteRefCnj(elRef)) return;
+      }
       if (!validateAgendaEspecial()) return;
     }
 
