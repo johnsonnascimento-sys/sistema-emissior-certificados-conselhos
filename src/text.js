@@ -310,7 +310,7 @@
           bold: false,
         },
         {
-          text: clean("“Aspectos Procedimentais e de Funcionalidade da Justiça Militar da União”."),
+          text: clean("“Aspectos procedimentais e de funcionamento da Justiça Militar da União”."),
           bold: true,
         },
       ];
